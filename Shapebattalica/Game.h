@@ -28,4 +28,6 @@ public:
 	sf::Font& font();
 	sf::Text& text();
 	const int frameRateLimit() const;
+
+	void sUserInput();
 };

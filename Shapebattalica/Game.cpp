@@ -71,9 +71,91 @@ void Game::run()
 {
 	// some systems should function while paused (like rendering)
 	// while others should not (like movement/input)
-	while (m_scene->running())
+	while (m_running)
 	{
+		sUserInput();
 		m_scene->update();
+	}
+}
+
+void Game::sUserInput()
+{
+	sf::Event event;
+	while (m_window.pollEvent(event))
+	{
+		// this event triggers when the window is closed
+		if (event.type == sf::Event::Closed)
+		{
+			m_running = false;
+		}
+
+		// this event is triggered when a key is pressed
+		if (event.type == sf::Event::KeyPressed)
+		{
+			switch (event.key.code)
+			{
+			case sf::Keyboard::W:
+				m_scene->sDoAction(Action("UP", "START"));
+				break;
+			case sf::Keyboard::A:
+				m_scene->sDoAction(Action("LEFT", "START"));
+				break;
+			case sf::Keyboard::S:
+				m_scene->sDoAction(Action("DOWN", "START"));
+				break;
+			case sf::Keyboard::D:
+				m_scene->sDoAction(Action("RIGHT", "START"));
+				break;
+			case sf::Keyboard::X:
+				setPaused(!m_paused);
+				break;
+			case sf::Keyboard::Escape:
+				m_running = false;
+				break;
+			default:
+				break;
+			}
+		}
+
+		// this event is triggered when a key is released
+		if (event.type == sf::Event::KeyReleased)
+		{
+			switch (event.key.code)
+			{
+			case sf::Keyboard::W:
+				m_scene->sDoAction(Action("UP", "END"));
+				break;
+			case sf::Keyboard::A:
+				m_scene->sDoAction(Action("LEFT", "END"));
+				break;
+			case sf::Keyboard::S:
+				m_scene->sDoAction(Action("DOWN", "END"));
+				break;
+			case sf::Keyboard::D:
+				m_scene->sDoAction(Action("RIGHT", "END"));
+				break;
+			default:
+				break;
+			}
+		}
+
+		// Need to add the pause check here as well or a player can shoot while things are paused!
+		if (event.type == sf::Event::MouseButtonPressed && !m_paused)
+		{
+			if (event.mouseButton.button == sf::Mouse::Left)
+			{
+				m_scene->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
+				m_scene->sDoAction(Action("SHOOT", "START"));
+			}
+
+			if (event.mouseButton.button == sf::Mouse::Right)
+			{
+				// If the recharge since the last fire has passed, you can start charging
+				// For now, hardcode a cooldown of 180 frames
+				m_scene->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
+				m_scene->sDoAction(Action("SPECIALSHOOT", "START")); // Implement CD here
+			}
+		}
 	}
 }
 

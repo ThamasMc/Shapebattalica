@@ -56,27 +56,22 @@ void Scene_Play::update()
 {
 	// some systems should function while paused (like rendering)
 	// while others should not (like movement/input)
-	while (m_running)
+	m_entities.update();
+
+	if (!m_paused)
 	{
-		m_entities.update();
+		// Do the things that you can do if not paused!
+		sEnemySpawner();
+		sMovement();
+		sCollision();
+		sLifespan();
 
-		if (!m_paused)
-		{
-			// Do the things that you can do if not paused!
-			sEnemySpawner();
-			sMovement();
-			sCollision();
-			sLifespan();
-
-			// Increment the current frame, only do when not paused
-			m_currentFrame++;
-		}
-
-		// Always need to take in input and render, regardless of whether we're paused
-		sUserInput();
-		sRender();
-
+		// Increment the current frame, only do when not paused
+		m_currentFrame++;
 	}
+
+	// Always need to take in input and render, regardless of whether we're paused
+	sRender();
 }
 
 void Scene_Play::setPaused(bool paused)
@@ -478,86 +473,58 @@ void Scene_Play::sRender()
 	game->window().display();
 }
 
-void Scene_Play::sUserInput()
+void Scene_Play::sDoAction(const Action& action)
 {
-	sf::Event event;
-	while (game->window().pollEvent(event))
+	if (action.type() == "START")
 	{
-		// this event triggers when the window is closed
-		if (event.type == sf::Event::Closed)
+		if (action.name() == "UP")
 		{
-			m_running = false;
+			m_player->cInput->up = true;
 		}
-
-		// this event is triggered when a key is pressed
-		if (event.type == sf::Event::KeyPressed)
+		else if (action.name() == "DOWN")
 		{
-			switch (event.key.code)
+			m_player->cInput->down = true;
+		}
+		else if (action.name() == "LEFT")
+		{
+			m_player->cInput->left = true;
+		}
+		else if (action.name() == "RIGHT")
+		{
+			m_player->cInput->right = true;
+		}
+		else if (action.name() == "SHOOT")
+		{
+			spawnBullet(m_player, m_target);
+		}
+		else if (action.name() == "SPECIALSHOOT")
+		{
+			if (m_currentFrame > m_lastSpecialShot + 180)
 			{
-			case sf::Keyboard::W:
-				m_player->cInput->up = true;
-				break;
-			case sf::Keyboard::A:
-				m_player->cInput->left = true;
-				break;
-			case sf::Keyboard::S:
-				m_player->cInput->down = true;
-				break;
-			case sf::Keyboard::D:
-				m_player->cInput->right = true;
-				break;
-			case sf::Keyboard::X:
-				setPaused(!m_paused);
-				break;
-			case sf::Keyboard::Escape:
-				m_running = false;
-				break;
-			default:
-				break;
+				spawnSpecialWeapon(m_player, m_target);
+				m_lastSpecialShot = m_currentFrame;
 			}
 		}
-
-		// this event is triggered when a key is released
-		if (event.type == sf::Event::KeyReleased)
+	}
+	else if (action.type() == "END")
+	{
+		if (action.name() == "UP")
 		{
-			switch (event.key.code)
-			{
-			case sf::Keyboard::W:
-				m_player->cInput->up = false;
-				break;
-			case sf::Keyboard::A:
-				m_player->cInput->left = false;
-				break;
-			case sf::Keyboard::S:
-				m_player->cInput->down = false;
-				break;
-			case sf::Keyboard::D:
-				m_player->cInput->right = false;
-				break;
-			default:
-				break;
-			}
+			m_player->cInput->up = false;
+		}
+		else if (action.name() == "DOWN")
+		{
+			m_player->cInput->down = false;
+		}
+		else if (action.name() == "LEFT")
+		{
+			m_player->cInput->left = false;
+		}
+		else if (action.name() == "RIGHT")
+		{
+			m_player->cInput->right = false;
 		}
 
-		// Need to add the pause check here as well or a player can shoot while things are paused!
-		if (event.type == sf::Event::MouseButtonPressed && !m_paused)
-		{
-			if (event.mouseButton.button == sf::Mouse::Left)
-			{
-				spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
-			}
-
-			if (event.mouseButton.button == sf::Mouse::Right)
-			{
-				// If the recharge since the last fire has passed, you can start charging
-				// For now, hardcode a cooldown of 180 frames
-				if (m_currentFrame > m_lastSpecialShot + 180)
-				{
-					spawnSpecialWeapon(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
-					m_lastSpecialShot = m_currentFrame;
-				}
-			}
-		}
 	}
 }
 
@@ -644,4 +611,9 @@ int Scene_Play::randInRange(int min, int max)
 const bool Scene_Play::running() const
 {
 	return m_running;
+}
+
+void Scene_Play::setTarget(const Vec2& target)
+{
+	m_target = target;
 }

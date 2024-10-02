@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "EntityManager.h"
+#include "Action.h"
 #include "Game.h"
 #include <SFML/Graphics.hpp>
 
@@ -24,6 +25,7 @@ class Scene_Play
 	int m_lastSpecialShot = 0;
 	bool m_paused = false;
 	bool m_running = true;
+	Vec2 m_target = Vec2();
 
 	std::shared_ptr<Entity> m_player;
 
@@ -31,7 +33,6 @@ class Scene_Play
 	void setPaused(bool paused);
 
 	void sMovement();
-	void sUserInput();
 	void sLifespan();
 	void sRender();
 	void sEnemySpawner();
@@ -51,5 +52,7 @@ public:
 	Scene_Play(const std::string& config, Game* engine); // constructor, takes in the game config
 
 	void update();
+	void sDoAction(const Action& action);
+	void setTarget(const Vec2& target);
 	const bool running() const;
 };
