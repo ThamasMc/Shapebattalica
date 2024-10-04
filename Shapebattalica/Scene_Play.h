@@ -1,21 +1,14 @@
 #pragma once
 
-#include "Entity.h"
-#include "EntityManager.h"
-#include "Action.h"
-#include "Game.h"
 #include <SFML/Graphics.hpp>
-
-class Game; // Resolving circular dependency
+#include "Scene.h"
 
 struct PlayerConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V; float S; };
 struct EnemyConfig { int SR, CR, OR, OG, OB, OT, VMIN, VMAX, L, SI; float SMIN, SMAX; }; 
 struct BulletConfig { int SR, CR, FR, FG, FB, OR, OG, OB, OT, V, L; float S; };
 
-class Scene_Play
+class Scene_Play : public Scene
 {
-	Game* game;
-	EntityManager m_entities; // vector of entities we maintain
 	PlayerConfig m_playerConfig;
 	EnemyConfig m_enemyConfig;
 	BulletConfig m_bulletConfig;
@@ -23,14 +16,11 @@ class Scene_Play
 	int m_currentFrame = 0;
 	int m_lastEnemySpawnTime = 0;
 	int m_lastSpecialShot = 0;
-	bool m_paused = false;
-	bool m_running = true;
 	Vec2 m_target = Vec2();
 
 	std::shared_ptr<Entity> m_player;
 
 	void init(const std::string& config); // Initialize the GameState with a config file
-	void setPaused(bool paused);
 
 	void sMovement();
 	void sLifespan();
@@ -54,5 +44,4 @@ public:
 	void update();
 	void sDoAction(const Action& action);
 	void setTarget(const Vec2& target);
-	const bool running() const;
 };

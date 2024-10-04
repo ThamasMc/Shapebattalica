@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include "Scene_Play.h"
 
 Game::Game(const std::string& config)
 {
@@ -51,7 +52,6 @@ void Game::init(const std::string& path)
 	}
 
 	// Create window
-	/*
 	if (fullscreen == 1)
 	{
 		m_window.create(sf::VideoMode(wWidth, wHeight), "Shapebattlia", sf::Style::Fullscreen);
@@ -60,11 +60,10 @@ void Game::init(const std::string& path)
 	else {
 		m_window.create(sf::VideoMode(wWidth, wHeight), "Shapebattlia");
 	}
-	*/
-	m_window.create(sf::VideoMode(1280, 720), "Shapebattalia");
+
 	m_window.setFramerateLimit(m_frameRateLimit);
 
-	m_scene = std::make_shared<Scene_Play>("scenePlayConfig.txt", this);
+	changeScene("play", std::make_shared<Scene_Play>("scenePlayConfig.txt", this));
 }
 
 void Game::run()
@@ -74,7 +73,7 @@ void Game::run()
 	while (m_running)
 	{
 		sUserInput();
-		m_scene->update();
+		currentScene()->update();
 	}
 }
 
@@ -95,16 +94,16 @@ void Game::sUserInput()
 			switch (event.key.code)
 			{
 			case sf::Keyboard::W:
-				m_scene->sDoAction(Action("UP", "START"));
+				currentScene()->sDoAction(Action("UP", "START"));
 				break;
 			case sf::Keyboard::A:
-				m_scene->sDoAction(Action("LEFT", "START"));
+				currentScene()->sDoAction(Action("LEFT", "START"));
 				break;
 			case sf::Keyboard::S:
-				m_scene->sDoAction(Action("DOWN", "START"));
+				currentScene()->sDoAction(Action("DOWN", "START"));
 				break;
 			case sf::Keyboard::D:
-				m_scene->sDoAction(Action("RIGHT", "START"));
+				currentScene()->sDoAction(Action("RIGHT", "START"));
 				break;
 			case sf::Keyboard::X:
 				setPaused(!m_paused);
@@ -123,16 +122,16 @@ void Game::sUserInput()
 			switch (event.key.code)
 			{
 			case sf::Keyboard::W:
-				m_scene->sDoAction(Action("UP", "END"));
+				currentScene()->sDoAction(Action("UP", "END"));
 				break;
 			case sf::Keyboard::A:
-				m_scene->sDoAction(Action("LEFT", "END"));
+				currentScene()->sDoAction(Action("LEFT", "END"));
 				break;
 			case sf::Keyboard::S:
-				m_scene->sDoAction(Action("DOWN", "END"));
+				currentScene()->sDoAction(Action("DOWN", "END"));
 				break;
 			case sf::Keyboard::D:
-				m_scene->sDoAction(Action("RIGHT", "END"));
+				currentScene()->sDoAction(Action("RIGHT", "END"));
 				break;
 			default:
 				break;
@@ -144,16 +143,16 @@ void Game::sUserInput()
 		{
 			if (event.mouseButton.button == sf::Mouse::Left)
 			{
-				m_scene->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
-				m_scene->sDoAction(Action("SHOOT", "START"));
+				currentScene()->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
+				currentScene()->sDoAction(Action("SHOOT", "START"));
 			}
 
 			if (event.mouseButton.button == sf::Mouse::Right)
 			{
 				// If the recharge since the last fire has passed, you can start charging
 				// For now, hardcode a cooldown of 180 frames
-				m_scene->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
-				m_scene->sDoAction(Action("SPECIALSHOOT", "START")); // Implement CD here
+				currentScene()->setTarget(Vec2(event.mouseButton.x, event.mouseButton.y));
+				currentScene()->sDoAction(Action("SPECIALSHOOT", "START"));
 			}
 		}
 	}
@@ -182,4 +181,16 @@ sf::Text& Game::text()
 const int Game::frameRateLimit() const
 {
 	return m_frameRateLimit;
+}
+
+std::shared_ptr<Scene> Game::currentScene()
+{
+	return scenes[current_scene];
+
+}
+
+void Game::changeScene(std::string name, std::shared_ptr<Scene> scene)
+{
+	current_scene = name;
+	scenes[name] = scene;
 }

@@ -74,11 +74,6 @@ void Scene_Play::update()
 	sRender();
 }
 
-void Scene_Play::setPaused(bool paused)
-{
-	m_paused = paused;
-}
-
 // respawn the player in the middle of the screen
 void Scene_Play::spawnPlayer()
 {
@@ -606,11 +601,6 @@ Vec2 Scene_Play::outOfBoundsVec(std::shared_ptr<Entity> entity)
 int Scene_Play::randInRange(int min, int max)
 {
 	return min + (rand() % (1 + max - min));
-}
-
-const bool Scene_Play::running() const
-{
-	return m_running;
 }
 
 void Scene_Play::setTarget(const Vec2& target)

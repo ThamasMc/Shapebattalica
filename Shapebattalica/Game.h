@@ -1,9 +1,10 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "Scene_Play.h"
+#include "Scene.h"
+#include <map>
 
-class Scene_Play; // Resolving circular dependency
+class Scene; // Resolving circular dependency
 
 class Game
 {
@@ -13,12 +14,15 @@ class Game
 	bool m_paused = false;
 	bool m_running = true;
 
-	std::shared_ptr<Scene_Play> m_scene;
+	std::map<std::string, std::shared_ptr<Scene>> scenes;
+	std::string current_scene = "NONE";
 
 	int m_frameRateLimit = 60;
 
 	void init(const std::string& config); // Initialize the GameState with a config file
 	void setPaused(bool paused);
+
+	std::shared_ptr<Scene> currentScene();
 
 public:
 	Game(const std::string& config); // constructor, takes in the game config
@@ -30,4 +34,5 @@ public:
 	const int frameRateLimit() const;
 
 	void sUserInput();
+	void changeScene(std::string name, std::shared_ptr<Scene> scene);
 };
